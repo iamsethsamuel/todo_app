@@ -1,10 +1,17 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shammo/shammo.dart';
+import 'package:todo_app/routes/homepage.dart';
+import 'package:todo_app/utils/utils.dart';
 import 'package:todo_app/widgets/customwidgets.dart';
 
 class CreateProject extends StatefulWidget {
-  const CreateProject({super.key});
+  const CreateProject(
+      {super.key, required this.personalityBox, required this.user});
+  final Box personalityBox;
+  final Map? user;
 
   @override
   State<CreateProject> createState() => _CreateProjectState();
@@ -19,9 +26,13 @@ class _CreateProjectState extends State<CreateProject> {
   TimeOfDay? time = TimeOfDay.now();
   DateTime? date = DateTime.now();
   Box box = Hive.box('todos');
+  Box personalityBox = Hive.box('personality');
 
   @override
   Widget build(BuildContext context) {
+    final suggestions =
+        personalitySuggestions[personalityBox.get(widget.user!['email'])]!;
+
     return ScaffoldSkeleton(
       title: "Create New Task",
       body: Padding(
@@ -41,7 +52,7 @@ class _CreateProjectState extends State<CreateProject> {
               child: CustomTextField(
                 controller: _descriptionController,
                 hint: 'Project Description',
-                keyboardType: TextInputType.phone,
+                textCapitalization: TextCapitalization.sentences,
                 maxLines: 4,
               ),
             ),
@@ -51,6 +62,7 @@ class _CreateProjectState extends State<CreateProject> {
                 controller: _tagsController,
                 hint: 'Tags: eg. work, important, boss',
                 keyboardType: TextInputType.emailAddress,
+                textCapitalization: TextCapitalization.none,
               ),
             ),
             Padding(
@@ -96,7 +108,58 @@ class _CreateProjectState extends State<CreateProject> {
                       'tags': _tagsController.text,
                       'due': _dueDateController.text
                     }).then((value) {
-                      showSnackBar(context, 'Project Created Successfully');
+                      showSnackBar(
+                          context,
+                          ListView(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "You have successfully created a new project",
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "Here are some strong suggestions specially created to help you stay focused on this project",
+                                ),
+                              ),
+                              if (widget.user != null)
+                                for (int i = 0; i < suggestions.length; i++)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, bottom: 10),
+                                    child: suggestions[i].contains('\n')
+                                        ? Wrap(
+                                            children: [
+                                              Text(
+                                                '${i + 1}. ${suggestions[i].substring(0, suggestions[i].indexOf('\n') - 1)}',
+                                              ),
+                                              for (final suggestion
+                                                  in suggestions[i]
+                                                      .substring(
+                                                        suggestions[i]
+                                                            .indexOf('\n'),
+                                                      )
+                                                      .split('\n'))
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    left: 20,
+                                                    bottom: 10,
+                                                  ),
+                                                  child: Text(suggestion),
+                                                )
+                                            ],
+                                          )
+                                        : Text(
+                                            "${i + 1}. ${suggestions[i]}",
+                                          ),
+                                  )
+                            ],
+                          ),
+                          duration: const Duration(days: 1));
+                      push(context, const HomePage());
                     }).catchError((err) {
                       print(err);
                       showSnackBar(context, 'An error occurred');

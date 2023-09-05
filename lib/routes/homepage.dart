@@ -5,6 +5,7 @@ import 'package:shammo/shammo.dart';
 import 'package:todo_app/routes/create_new_project.dart';
 import 'package:todo_app/routes/login.dart';
 import 'package:todo_app/utils/theme.dart';
+import 'package:todo_app/utils/utils.dart';
 import 'package:todo_app/widgets/TaskRange.dart';
 import 'package:todo_app/widgets/Tasks.dart';
 import 'package:todo_app/widgets/customwidgets.dart';
@@ -17,7 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String range = 'Day';
+  String range = 'All';
   String startDate = "";
   String endDate = "";
   ScrollDirection? taskScrollDirection;
@@ -57,6 +58,18 @@ class _HomePageState extends State<HomePage> {
     user?.remove('password');
   }
 
+  String getTaskName() {
+    switch (range) {
+      case 'Day':
+        return 'Daily Tasks';
+      case 'Week':
+        return 'Weekly Tasks';
+      case 'Month':
+        return 'Monthly Tasks';
+    }
+    return 'All Tasks';
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldSkeleton(
@@ -85,12 +98,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Button(
-                  text: 'Log out',
-                  onPressed: () {
-                    userBox.clear().then((value) {
-                      push(context, const Login());
-                    });
-                  })
+                text: 'Log out',
+                onPressed: () {
+                  userBox.clear().then((value) {
+                    push(context, const Login());
+                  });
+                },
+              ),
+              
             ],
           ),
         ),
@@ -115,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Daily Tasks',
+                      getTaskName(),
                       style: headlineMedium(context)?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -144,7 +159,12 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
         ),
         onPressed: () {
-          push(context, const CreateProject());
+          push(
+              context,
+              CreateProject(
+                personalityBox: box,
+                user: user,
+              ));
         },
       ),
     );
