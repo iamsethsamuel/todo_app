@@ -4,20 +4,49 @@ import 'package:shammo/shammo.dart';
 import 'package:todo_app/utils/utils.dart';
 import 'package:todo_app/widgets/customwidgets.dart';
 
-class Tasks extends StatelessWidget {
-  const Tasks(
-      {super.key,
-      required this.endDate,
-      required this.startDate,
-      required this.range,
-      required this.controller});
+class Tasks extends StatefulWidget {
+  const Tasks({
+    super.key,
+    required this.endDate,
+    required this.startDate,
+    required this.range,
+    required this.controller,
+    required this.user,
+    required this.personalityBox,
+  });
   final String startDate;
   final String endDate;
   final String range;
   final ScrollController controller;
+  final Map? user;
+  final Box personalityBox;
+
+  @override
+  State<Tasks> createState() => _TasksState();
+}
+
+class _TasksState extends State<Tasks> {
+  bool showSuggestions = false;
+  late String startDate;
+  late String endDate;
+  late String range;
+  late ScrollController controller;
+
+  @override
+  void initState() {
+    startDate = widget.startDate;
+    endDate = widget.endDate;
+    range = widget.range;
+    controller = widget.controller;
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final suggestions = personalitySuggestions[
+        widget.personalityBox.get(widget.user!['email'])]!;
+
     bool calcDays(element, int duration) {
       final d = dateDifference(element['due'].toString());
       if (d.contains('hours')) {
@@ -39,7 +68,6 @@ class Tasks extends StatelessWidget {
         valueListenable: Hive.box('todos').listenable(),
         builder: (context, box, widget) {
           final tasksList = box.values.toList().reversed.toList();
-          // print(tasksList);
 
           late List tasks;
           if (startDate.isNotEmpty) {
@@ -82,7 +110,8 @@ class Tasks extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                   vertical: 5,
                 ),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -167,7 +196,63 @@ class Tasks extends StatelessWidget {
                               },
                             ),
                           ),
-                        )
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: showSuggestions ? 20 : 0),
+                          child: SizedBox(
+                            width: width(context),
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  showSuggestions = !showSuggestions;
+                                });
+                              },
+                              child: Text(
+                                !showSuggestions
+                                    ? "Show suggestions"
+                                    : "Hide Suggestion",
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (showSuggestions)
+                          for (int i = 0; i < suggestions.length; i++)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 10, bottom: 10),
+                              child: suggestions[i].contains('\n')
+                                  ? SizedBox(
+                                      width: width(context),
+                                      child: Wrap(
+                                        children: [
+                                          Text(
+                                            '${i + 1}. ${suggestions[i].substring(0, suggestions[i].indexOf('\n') - 1)}',
+                                          ),
+                                          for (final suggestion
+                                              in suggestions[i]
+                                                  .substring(
+                                                    suggestions[i]
+                                                        .indexOf('\n'),
+                                                  )
+                                                  .split('\n'))
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 20,
+                                                bottom: 10,
+                                              ),
+                                              child: Text(suggestion),
+                                            )
+                                        ],
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      width: width(context),
+                                      child: Text(
+                                        "${i + 1}. ${suggestions[i]}",
+                                      ),
+                                    ),
+                            )
                       ],
                     ),
                   ),

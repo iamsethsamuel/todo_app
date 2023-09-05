@@ -89,7 +89,7 @@ class _CreateProjectState extends State<CreateProject> {
                     );
                     final dateIso = date?.toIso8601String();
                     _dueDateController.text =
-                        '${dateIso?.substring(0, dateIso.lastIndexOf('T'))} ${time?.hour}:${time?.minute}:00.338956';
+                        '${dateIso?.substring(0, dateIso.lastIndexOf('T'))} ${time?.hour.toString().length == 1 ? '0${time?.hour}' : time?.hour}:${time?.minute.toString().length == 1 ? '0${time?.minute}' : time?.minute}:00';
                   });
                 },
               ),
@@ -101,7 +101,6 @@ class _CreateProjectState extends State<CreateProject> {
                 child: Button(
                   text: 'Create Project',
                   onPressed: () {
-                    // push(context, const HomePage());
                     box.add({
                       'name': _nameController.text,
                       'description': _descriptionController.text,
@@ -110,53 +109,67 @@ class _CreateProjectState extends State<CreateProject> {
                     }).then((value) {
                       showSnackBar(
                           context,
-                          ListView(
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 10),
-                                child: Text(
-                                  "You have successfully created a new project",
+                          SizedBox(
+                            width: width(context),
+                            height: height(context) / 2,
+                            child: ListView(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  child: Text(
+                                    "You have successfully created a new project",
+                                  ),
                                 ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 10),
-                                child: Text(
-                                  "Here are some strong suggestions specially created to help you stay focused on this project",
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  child: Text(
+                                    "Here are some strong suggestions specially created to help you stay focused on this project",
+                                  ),
                                 ),
-                              ),
-                              if (widget.user != null)
-                                for (int i = 0; i < suggestions.length; i++)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 10, bottom: 10),
-                                    child: suggestions[i].contains('\n')
-                                        ? Wrap(
-                                            children: [
-                                              Text(
-                                                '${i + 1}. ${suggestions[i].substring(0, suggestions[i].indexOf('\n') - 1)}',
-                                              ),
-                                              for (final suggestion
-                                                  in suggestions[i]
-                                                      .substring(
-                                                        suggestions[i]
-                                                            .indexOf('\n'),
-                                                      )
-                                                      .split('\n'))
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                    left: 20,
-                                                    bottom: 10,
-                                                  ),
-                                                  child: Text(suggestion),
-                                                )
-                                            ],
-                                          )
-                                        : Text(
-                                            "${i + 1}. ${suggestions[i]}",
-                                          ),
-                                  )
-                            ],
+                                if (widget.user != null)
+                                  for (int i = 0; i < suggestions.length; i++)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10, bottom: 10),
+                                      child: suggestions[i].contains('\n')
+                                          ? Wrap(
+                                              children: [
+                                                Text(
+                                                  '${i + 1}. ${suggestions[i].substring(0, suggestions[i].indexOf('\n') - 1)}',
+                                                ),
+                                                for (final suggestion
+                                                    in suggestions[i]
+                                                        .substring(
+                                                          suggestions[i]
+                                                              .indexOf('\n'),
+                                                        )
+                                                        .split('\n'))
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      left: 20,
+                                                      bottom: 10,
+                                                    ),
+                                                    child: Text(suggestion),
+                                                  )
+                                              ],
+                                            )
+                                          : Text(
+                                              "${i + 1}. ${suggestions[i]}",
+                                            ),
+                                    ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 20),
+                                  child: Button(
+                                    onPressed: () {
+                                      removeSnackbar(context);
+                                    },
+                                    text: "Close",
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                           duration: const Duration(days: 1));
                       push(context, const HomePage());

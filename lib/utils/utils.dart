@@ -12,6 +12,7 @@ String dateDifference(String date) {
       return '${difference.inDays} days';
     }
   } catch (e) {
+    print(e);
     return "Invalid Date";
   }
 }
